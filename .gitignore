@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.mastra/
+*.tsbuildinfo
+
+# Secrets — never commit real keys
+.env
+.env.*
+!.env.example
+
+# Local / generated data
+data/movies.jsonl
+data/*.db
+data/*.db-*
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.duckdb
+*.duckdb.wal
+
+# Logs and caches
+*.log
+npm-debug.log*
+.cache/
+
+# OS and editor
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+*.swo

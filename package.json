@@ -1,0 +1,29 @@
+{
+  "name": "thatmovie",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "mastra dev",
+    "build": "mastra build",
+    "build:movies": "node --experimental-strip-types scripts/build-movies.ts",
+    "embed:movies": "node --env-file=.env --experimental-strip-types scripts/embed-movies.ts",
+    "search:movies": "node --env-file=.env --experimental-strip-types scripts/search-movies.ts",
+    "start": "mastra start"
+  },
+  "dependencies": {
+    "@mastra/core": "1.66.0",
+    "@mastra/libsql": "^1.22.5",
+    "@mastra/rag": "^2.6.2",
+    "ai": "^7.0.99",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "mastra": "1.29.0",
+    "typescript": "^6.0.3"
+  }
+}
