@@ -27,8 +27,9 @@ export const resolveProjectRoot = () => {
 };
 
 export const MOVIE_INDEX_NAME = 'movies';
+export const MOVIE_EMBEDDING_MODEL = 'openai/text-embedding-3-small';
 export const MOVIE_EMBEDDING_DIMENSION = 1536;
-export const MOVIE_VECTOR_URL = `file:${join(resolveProjectRoot(), 'data/movies-vector.db')}`;
+const MOVIE_VECTOR_URL = `file:${join(resolveProjectRoot(), 'data/movies-vector.db')}`;
 
 export const createMovieVectorStore = () =>
   new LibSQLVector({

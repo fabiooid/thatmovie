@@ -1,5 +1,6 @@
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
+import { alwaysCallsSearchScorer } from '../scorers/always-calls-search.ts';
 import { searchMoviesTool } from '../tools/search-movies-tool.ts';
 
 export const movieAgent = new Agent({
@@ -13,6 +14,12 @@ Only name movies that appear in the search results. If the right movie is unclea
 `,
   model: 'deepseek/deepseek-flash',
   tools: { searchMoviesTool },
+  scorers: {
+    alwaysCallsSearch: {
+      scorer: alwaysCallsSearchScorer,
+      sampling: { type: 'ratio', rate: 1 },
+    },
+  },
   memory: new Memory({
     options: {
       lastMessages: 10,

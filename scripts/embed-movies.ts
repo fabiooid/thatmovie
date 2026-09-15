@@ -8,6 +8,7 @@ import type { Movie } from '../src/mastra/data/movie.ts';
 import {
   createMovieVectorStore,
   MOVIE_EMBEDDING_DIMENSION,
+  MOVIE_EMBEDDING_MODEL,
   MOVIE_INDEX_NAME,
 } from '../src/mastra/data/movie-store.ts';
 import { movieToText } from '../src/mastra/data/movie-text.ts';
@@ -16,7 +17,7 @@ const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const moviesPath = join(projectRoot, 'data/movies.jsonl');
 const MAX_CHUNK_CHARS = 6000;
 const BATCH_SIZE = 64;
-const embedder = new ModelRouterEmbeddingModel('openai/text-embedding-3-small');
+const embedder = new ModelRouterEmbeddingModel(MOVIE_EMBEDDING_MODEL);
 
 type MovieChunk = {
   id: string;
@@ -77,21 +78,25 @@ const chunkMovie = async (movie: Movie): Promise<MovieChunk[]> => {
 };
 
 const embedBatch = async (texts: string[]) => {
-  for (let attempt = 0; attempt < 5; attempt += 1) {
+  let attempt = 0;
+
+  while (true) {
     try {
       const result = await embedder.doEmbed({ values: texts });
       return result.embeddings;
     } catch (error) {
-      const waitMs = 1000 * 2 ** attempt;
-      console.warn(`Embed batch failed (attempt ${attempt + 1}). Retrying in ${waitMs}ms.`);
-      await new Promise((resolve) => setTimeout(resolve, waitMs));
-      if (attempt === 4) {
+      attempt += 1;
+      if (attempt >= 5) {
         throw error;
       }
+
+      const waitMs = 1000 * 2 ** (attempt - 1);
+      console.warn(
+        `Embed batch failed (attempt ${attempt}). Retrying in ${waitMs}ms.`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, waitMs));
     }
   }
-
-  throw new Error('Embedding failed.');
 };
 
 const embedMovies = async () => {

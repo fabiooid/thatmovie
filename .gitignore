@@ -4,6 +4,8 @@ node_modules/
 # Build output
 dist/
 .mastra/
+.next/
+out/
 *.tsbuildinfo
 
 # Secrets — never commit real keys

@@ -1,8 +1,5 @@
-import { ModelRouterEmbeddingModel } from '@mastra/core/llm';
-import {
-  createMovieVectorStore,
-  MOVIE_INDEX_NAME,
-} from '../src/mastra/data/movie-store.ts';
+import { createMovieVectorStore } from '../src/mastra/data/movie-store.ts';
+import { searchMovieIndex } from '../src/mastra/tools/search-movies-tool.ts';
 
 const query = process.argv.slice(2).join(' ').trim();
 
@@ -11,16 +8,8 @@ if (!query) {
   process.exit(1);
 }
 
-const embedder = new ModelRouterEmbeddingModel('openai/text-embedding-3-small');
 const store = createMovieVectorStore();
-const { embeddings } = await embedder.doEmbed({ values: [query] });
-
-const results = await store.query({
-  indexName: MOVIE_INDEX_NAME,
-  queryVector: embeddings[0],
-  topK: 10,
-});
-
+const results = await searchMovieIndex(store, query);
 await store.close();
 
 console.log(`Query: ${query}\n`);
@@ -30,12 +19,3 @@ results.forEach((result, index) => {
   const year = result.metadata?.year ?? 'Unknown';
   console.log(`${index + 1}. ${title} (${year}) — ${result.score.toFixed(3)}`);
 });
-
-const found = results.find(
-  (result) => String(result.metadata?.title ?? '') === 'Groundhog Day',
-);
-console.log(
-  found
-    ? `\nGroundhog Day is in the top 10 (score ${found.score.toFixed(3)}).`
-    : '\nGroundhog Day is not in the top 10.',
-);

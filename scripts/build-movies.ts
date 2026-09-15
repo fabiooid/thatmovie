@@ -111,18 +111,7 @@ const buildMovies = async () => {
     movies.map((movie) => JSON.stringify(movie)).join('\n') + '\n',
   );
 
-  const groundhogDay = movies.find((movie) => movie.title === 'Groundhog Day');
-
   console.log(`Wrote ${movies.length} movies to ${outputPath}`);
-
-  if (groundhogDay) {
-    console.log(
-      `Found Groundhog Day (${groundhogDay.year}) — ${groundhogDay.genres.join(', ')}`,
-    );
-    console.log(`Plot starts: ${groundhogDay.plot.slice(0, 160)}...`);
-  } else {
-    console.log('Groundhog Day was not found.');
-  }
 };
 
 await buildMovies();
