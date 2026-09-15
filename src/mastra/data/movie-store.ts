@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { LibSQLVector } from '@mastra/libsql';
 
-const resolveProjectRoot = () => {
+export const resolveProjectRoot = () => {
   const starts = [process.env.INIT_CWD, process.cwd()].filter(Boolean);
 
   for (const start of starts) {

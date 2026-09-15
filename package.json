@@ -16,7 +16,9 @@
   },
   "dependencies": {
     "@mastra/core": "1.66.0",
+    "@mastra/editor": "^0.14.5",
     "@mastra/libsql": "^1.22.5",
+    "@mastra/memory": "^1.29.0",
     "@mastra/rag": "^2.6.2",
     "ai": "^7.0.99",
     "zod": "^4.6.5"
