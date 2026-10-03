@@ -6,10 +6,15 @@ import { fileURLToPath } from 'node:url';
 import type { Movie } from '../src/mastra/data/movie.ts';
 
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-const sourceDir =
-  process.env.MOVIE_SUMMARIES_DIR ??
-  '/Users/fabiovella/Downloads/MovieSummaries';
+const sourceDir = process.env.MOVIE_SUMMARIES_DIR;
 const outputPath = join(projectRoot, 'data/movies.jsonl');
+
+if (!sourceDir) {
+  console.error(
+    'MOVIE_SUMMARIES_DIR is not set. Download the CMU Movie Summary Corpus and point this variable at the folder that contains movie.metadata.tsv and plot_summaries.txt.',
+  );
+  process.exit(1);
+}
 
 const parseNameMap = (value: string): string[] => {
   if (!value || value === '\\N') {
