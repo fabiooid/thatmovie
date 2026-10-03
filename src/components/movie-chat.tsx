@@ -1,5 +1,3 @@
-'use client';
-
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import { ArrowUp, Film, Square } from 'lucide-react';

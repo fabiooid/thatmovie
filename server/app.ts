@@ -1,24 +1,22 @@
 import { handleChatStream } from '@mastra/ai-sdk';
 import { toAISdkMessages } from '@mastra/ai-sdk/ui';
 import { createUIMessageStreamResponse } from 'ai';
-import { NextResponse } from 'next/server';
-import { CHAT_RESOURCE_ID, isGuestId } from '@/lib/guest';
-import { mastra } from '@/mastra';
-
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+import { Hono } from 'hono';
+import { CHAT_RESOURCE_ID, isGuestId } from '../src/lib/guest.ts';
+import { mastra } from '../src/mastra/index.ts';
 
 const AGENT_ID = 'movie-agent';
 
-export async function POST(req: Request) {
-  const params = await req.json();
+export const app = new Hono();
+
+app.post('/api/chat', async (c) => {
+  const params = await c.req.json();
   const thread = isGuestId(params?.memory?.thread)
     ? params.memory.thread
     : null;
 
   if (!thread) {
-    return NextResponse.json({ error: 'Missing chat id.' }, { status: 400 });
+    return c.json({ error: 'Missing chat id.' }, 400);
   }
 
   const stream = await handleChatStream({
@@ -27,7 +25,7 @@ export async function POST(req: Request) {
     version: 'v7',
     params: {
       ...params,
-      abortSignal: req.signal,
+      abortSignal: c.req.raw.signal,
       memory: {
         thread,
         resource: CHAT_RESOURCE_ID,
@@ -36,13 +34,13 @@ export async function POST(req: Request) {
   });
 
   return createUIMessageStreamResponse({ stream });
-}
+});
 
-export async function GET(req: Request) {
-  const thread = new URL(req.url).searchParams.get('thread');
+app.get('/api/chat', async (c) => {
+  const thread = c.req.query('thread');
 
   if (!isGuestId(thread)) {
-    return NextResponse.json([]);
+    return c.json([]);
   }
 
   try {
@@ -52,10 +50,10 @@ export async function GET(req: Request) {
       resourceId: CHAT_RESOURCE_ID,
     });
 
-    return NextResponse.json(
+    return c.json(
       toAISdkMessages(recalled?.messages ?? [], { version: 'v7' }),
     );
   } catch {
-    return NextResponse.json([]);
+    return c.json([]);
   }
-}
+});
