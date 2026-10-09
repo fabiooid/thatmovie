@@ -6,6 +6,10 @@ import Markdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {
+  WatchProvidersCard,
+  type WatchProvidersResult,
+} from '@/components/watch-providers';
+import {
   CHAT_RESOURCE_ID,
   createGuestId,
   getGuestId,
@@ -25,10 +29,44 @@ const getMessageText = (message: UIMessage) =>
     .join('')
     .trim();
 
+const isToolPart = (
+  part: UIMessage['parts'][number],
+): part is UIMessage['parts'][number] & { type: string } =>
+  typeof part.type === 'string' && part.type.startsWith('tool-');
+
 const isLookingUpMovies = (message: UIMessage) =>
   message.role === 'assistant' &&
   !getMessageText(message) &&
-  message.parts.some((part) => part.type.startsWith('tool-'));
+  message.parts.some((part) => isToolPart(part));
+
+const isWatchProvidersPart = (part: UIMessage['parts'][number]) =>
+  part.type === 'tool-get-watch-providers' ||
+  (isToolPart(part) &&
+    'toolName' in part &&
+    (part as { toolName?: string }).toolName === 'get-watch-providers');
+
+const getWatchProvidersOutput = (
+  part: UIMessage['parts'][number],
+): WatchProvidersResult | null => {
+  if (!isWatchProvidersPart(part)) {
+    return null;
+  }
+
+  const record = part as {
+    state?: string;
+    output?: unknown;
+  };
+
+  if (record.state && record.state !== 'output-available') {
+    return null;
+  }
+
+  if (!record.output || typeof record.output !== 'object') {
+    return null;
+  }
+
+  return record.output as WatchProvidersResult;
+};
 
 export function MovieChat() {
   const [guestId, setGuestId] = useState('');
@@ -56,9 +94,29 @@ export function MovieChat() {
   );
 }
 
-function ChatShell({ children }: { children?: ReactNode }) {
+function ChatShell({
+  children,
+  actions,
+}: {
+  children?: ReactNode;
+  actions?: ReactNode;
+}) {
   return (
     <div className="mx-auto flex h-svh w-full max-w-2xl flex-col px-4">
+      <header className="flex items-start justify-between gap-4 py-5">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <Film className="size-4 text-muted-foreground" />
+            <p className="font-[family-name:var(--font-serif)] text-xl leading-none tracking-tight">
+              That Movie
+            </p>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Describe a movie you remember. We will try to find it.
+          </p>
+        </div>
+        {actions}
+      </header>
       {children}
     </div>
   );
@@ -135,26 +193,15 @@ function ChatSession({
   };
 
   return (
-    <ChatShell>
-      <header className="flex items-start justify-between gap-4 py-5">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <Film className="size-4 text-muted-foreground" />
-            <p className="font-[family-name:var(--font-serif)] text-xl leading-none tracking-tight">
-              That Movie
-            </p>
-          </div>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Describe a movie you remember. We will try to find it.
-          </p>
-        </div>
-        {messages.length > 0 ? (
+    <ChatShell
+      actions={
+        messages.length > 0 ? (
           <Button variant="ghost" size="sm" onClick={onNewChat}>
             New chat
           </Button>
-        ) : null}
-      </header>
-
+        ) : null
+      }
+    >
       <div className="min-h-0 flex-1 overflow-y-auto py-2">
         {messages.length === 0 ? (
           <div className="flex h-full flex-col justify-center gap-3 pb-8">
@@ -178,6 +225,9 @@ function ChatSession({
           <div className="flex flex-col gap-4 pb-4">
             {messages.map((message) => {
               const text = getMessageText(message);
+              const watchBlocks = message.parts
+                .map((part) => getWatchProvidersOutput(part))
+                .filter((value): value is WatchProvidersResult => value != null);
 
               if (message.role === 'user') {
                 return (
@@ -199,15 +249,23 @@ function ChatSession({
                 );
               }
 
-              if (!text) {
+              if (!text && watchBlocks.length === 0) {
                 return null;
               }
 
               return (
-                <div key={message.id} className="flex justify-start">
-                  <div className="max-w-[85%] rounded-2xl bg-muted px-4 py-2.5 text-sm leading-relaxed [&_p]:mb-2 [&_p:last-child]:mb-0 [&_ol]:mb-2 [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-4 [&_ol:last-child]:mb-0 [&_ul]:mb-2 [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-4 [&_ul:last-child]:mb-0 [&_strong]:font-medium">
-                    <Markdown>{text}</Markdown>
-                  </div>
+                <div key={message.id} className="flex flex-col items-start gap-1">
+                  {text ? (
+                    <div className="max-w-[85%] rounded-2xl bg-muted px-4 py-2.5 text-sm leading-relaxed [&_p]:mb-2 [&_p:last-child]:mb-0 [&_ol]:mb-2 [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-4 [&_ol:last-child]:mb-0 [&_ul]:mb-2 [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-4 [&_ul:last-child]:mb-0 [&_strong]:font-medium">
+                      <Markdown>{text}</Markdown>
+                    </div>
+                  ) : null}
+                  {watchBlocks.map((block, index) => (
+                    <WatchProvidersCard
+                      key={`${message.id}-watch-${index}`}
+                      data={block}
+                    />
+                  ))}
                 </div>
               );
             })}

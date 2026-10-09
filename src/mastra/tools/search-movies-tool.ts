@@ -39,8 +39,11 @@ export const searchMoviesTool = createTool({
     const results = await searchMovieIndex(vectorStore, query);
 
     return results.map((result) => ({
+      movieId: result.metadata?.movieId
+        ? String(result.metadata.movieId)
+        : null,
       title: String(result.metadata?.title ?? 'Unknown'),
-      year: result.metadata?.year ?? 'Unknown',
+      year: result.metadata?.year ?? null,
       genres: result.metadata?.genres ?? [],
       score: result.score,
       plot: String(result.metadata?.text ?? '').slice(0, 400),

@@ -15,6 +15,7 @@ out/
 
 # Local / generated data
 data/movies.jsonl
+data/watch-country.json
 data/*.db
 data/*.db-*
 *.db
