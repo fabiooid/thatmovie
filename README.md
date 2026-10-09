@@ -2,40 +2,52 @@
 
 Chat app that helps you find a movie from a fuzzy plot description — and shows where you can watch it (via TMDB / JustWatch).
 
-## Setup (API keys)
+## API keys
 
-There is **no** `.env` file in the repo on purpose (secrets stay on your machine). Use the template instead:
+Where-to-watch needs **`TMDB_API_KEY`**. Chat/search also need `DEEPSEEK_API_KEY` and `OPENAI_API_KEY`.
 
-1. In the project root, copy the example file:
+The app reads these from **`process.env`** (not only from a file). So:
+
+- **Cursor Cloud Agents** → set secrets in the Cursor dashboard (recommended; no `.env` on the cloud machine)
+- **Local laptop** → copy `.env.example` → `.env`
+
+Get a free TMDB key: [themoviedb.org/settings/api](https://www.themoviedb.org/settings/api) → **API Key (v3 auth)**.
+
+### Cursor Cloud Agent / hosted environment
+
+Cloud VMs do **not** ship with a `.env` file. That is normal.
+
+1. Open the [Cloud Agents dashboard](https://cursor.com/dashboard/cloud-agents).
+2. Add a secret named exactly **`TMDB_API_KEY`** with your TMDB v3 API key.
+   - Prefer **Secrets** for your user/team, or secrets on the **environment** used by this repo (ThatMovie).
+   - Also add `DEEPSEEK_API_KEY` and `OPENAI_API_KEY` if they aren’t already set.
+3. **Start a new Cloud Agent** after saving secrets. Secrets are injected when an agent **starts**; an already-running agent won’t see new ones.
+4. No need to create `.env` on the cloud machine.
+
+Cursor injects secrets as environment variables. This app uses `process.env.TMDB_API_KEY` for TMDB calls.
+
+### Local development
+
+1. In the project root:
 
    ```bash
    cp .env.example .env
    ```
 
-   The template file is named **`.env.example`** (starts with a dot). If you don’t see it in Finder/Explorer, turn on “show hidden files”, or list it in the terminal with `ls -la`.
+   The template is **`.env.example`** (leading dot). Show hidden files if needed, or run `ls -la`.
 
-2. Open `.env` and fill in your keys:
+2. Edit `.env` and fill in the keys. Never commit `.env`.
+
+3. Run:
 
    ```bash
-   DEEPSEEK_API_KEY=...   # chat agent
-   OPENAI_API_KEY=...     # movie search embeddings
-   TMDB_API_KEY=...       # where-to-watch (TMDB v3 API key)
+   npm install
+   npm run dev
    ```
 
-3. Get a free TMDB key: [themoviedb.org/settings/api](https://www.themoviedb.org/settings/api) → use the **API Key (v3 auth)**.
+   Open [http://localhost:3000](http://localhost:3000).
 
-4. Never commit `.env`. Only `.env.example` is tracked in git.
-
-The app loads `.env` from the **project root** when you run the server (`npm run dev` / `npm start`).
-
-## Run
-
-```bash
-npm install
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000).
+If both a cloud/dashboard secret and a local `.env` value exist, the **already-set environment variable wins** (file does not overwrite it).
 
 ## Where to watch
 

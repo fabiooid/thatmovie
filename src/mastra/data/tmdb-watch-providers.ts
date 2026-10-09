@@ -57,6 +57,7 @@ type TmdbCountryProviders = {
 const searchCache = new Map<string, CacheEntry<TmdbSearchMovie | null>>();
 const providersCache = new Map<string, CacheEntry<WatchAvailability>>();
 
+/** Reads TMDB key from process env (Cursor Cloud secrets or local .env). */
 const getApiKey = () => process.env.TMDB_API_KEY?.trim() || '';
 
 const cacheGet = <T>(cache: Map<string, CacheEntry<T>>, key: string) => {
