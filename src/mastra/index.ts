@@ -6,11 +6,12 @@ import { movieAgent } from './agents/movie-agent.ts';
 import { createMovieVectorStore, resolveProjectRoot } from './data/movie-store.ts';
 import { alwaysCallsSearchScorer } from './scorers/always-calls-search.ts';
 import { searchMoviesTool } from './tools/search-movies-tool.ts';
+import { setWatchCountryTool } from './tools/set-watch-country-tool.ts';
 import { watchProvidersTool } from './tools/watch-providers-tool.ts';
 
 export const mastra = new Mastra({
   agents: { movieAgent },
-  tools: { searchMoviesTool, watchProvidersTool },
+  tools: { searchMoviesTool, watchProvidersTool, setWatchCountryTool },
   scorers: {
     alwaysCallsSearch: alwaysCallsSearchScorer,
   },

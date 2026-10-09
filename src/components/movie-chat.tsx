@@ -10,16 +10,11 @@ import {
   type WatchProvidersResult,
 } from '@/components/watch-providers';
 import {
-  WATCH_COUNTRIES,
-  type WatchCountryCode,
-} from '@/lib/countries';
-import {
   CHAT_RESOURCE_ID,
   createGuestId,
   getGuestId,
   saveGuestId,
 } from '@/lib/guest';
-import { getStoredWatchCountry, saveWatchCountry } from '@/lib/watch-country';
 
 const EXAMPLES = [
   'A kid finds a game that starts happening in real life',
@@ -75,11 +70,9 @@ const getWatchProvidersOutput = (
 
 export function MovieChat() {
   const [guestId, setGuestId] = useState('');
-  const [country, setCountry] = useState<WatchCountryCode>('US');
 
   useEffect(() => {
     setGuestId(getGuestId());
-    setCountry(getStoredWatchCountry());
   }, []);
 
   const startNewChat = () => {
@@ -88,68 +81,24 @@ export function MovieChat() {
     setGuestId(id);
   };
 
-  const onCountryChange = (next: WatchCountryCode) => {
-    setCountry(next);
-    saveWatchCountry(next);
-  };
-
   if (!guestId) {
-    return (
-      <ChatShell
-        country={country}
-        onCountryChange={onCountryChange}
-      />
-    );
+    return <ChatShell />;
   }
 
   return (
     <ChatSession
       key={guestId}
       guestId={guestId}
-      country={country}
-      onCountryChange={onCountryChange}
       onNewChat={startNewChat}
     />
   );
 }
 
-function CountryPicker({
-  country,
-  onCountryChange,
-}: {
-  country: WatchCountryCode;
-  onCountryChange: (country: WatchCountryCode) => void;
-}) {
-  return (
-    <label className="flex items-center gap-2 text-sm text-muted-foreground">
-      <span className="whitespace-nowrap">Country</span>
-      <select
-        value={country}
-        onChange={(event) =>
-          onCountryChange(event.target.value as WatchCountryCode)
-        }
-        className="h-8 max-w-[10.5rem] rounded-md border bg-background px-2 text-foreground"
-        aria-label="Streaming country"
-      >
-        {WATCH_COUNTRIES.map((option) => (
-          <option key={option.code} value={option.code}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
-
 function ChatShell({
   children,
-  country,
-  onCountryChange,
   actions,
 }: {
   children?: ReactNode;
-  country: WatchCountryCode;
-  onCountryChange: (country: WatchCountryCode) => void;
   actions?: ReactNode;
 }) {
   return (
@@ -166,10 +115,7 @@ function ChatShell({
             Describe a movie you remember. We will try to find it.
           </p>
         </div>
-        <div className="flex shrink-0 flex-col items-end gap-2">
-          <CountryPicker country={country} onCountryChange={onCountryChange} />
-          {actions}
-        </div>
+        {actions}
       </header>
       {children}
     </div>
@@ -178,19 +124,13 @@ function ChatShell({
 
 function ChatSession({
   guestId,
-  country,
-  onCountryChange,
   onNewChat,
 }: {
   guestId: string;
-  country: WatchCountryCode;
-  onCountryChange: (country: WatchCountryCode) => void;
   onNewChat: () => void;
 }) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState('');
-  const countryRef = useRef(country);
-  countryRef.current = country;
 
   const transport = useMemo(
     () =>
@@ -200,7 +140,6 @@ function ChatSession({
           return {
             body: {
               messages: [messages.at(-1)],
-              country: countryRef.current,
               memory: {
                 thread: guestId,
                 resource: CHAT_RESOURCE_ID,
@@ -255,8 +194,6 @@ function ChatSession({
 
   return (
     <ChatShell
-      country={country}
-      onCountryChange={onCountryChange}
       actions={
         messages.length > 0 ? (
           <Button variant="ghost" size="sm" onClick={onNewChat}>

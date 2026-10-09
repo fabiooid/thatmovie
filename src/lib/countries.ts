@@ -8,7 +8,6 @@ export const WATCH_COUNTRIES = [
 export type WatchCountryCode = (typeof WATCH_COUNTRIES)[number]['code'];
 
 export const DEFAULT_WATCH_COUNTRY: WatchCountryCode = 'US';
-export const WATCH_COUNTRY_STORAGE_KEY = 'thatmovie-watch-country';
 
 const COUNTRY_CODES = new Set<string>(WATCH_COUNTRIES.map((c) => c.code));
 
