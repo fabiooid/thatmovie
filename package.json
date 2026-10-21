@@ -30,7 +30,7 @@
     "ai": "^7.0.99",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.3.0",
-    "hono": "^4.11.4",
+    "hono": "^4.13.13",
     "lucide-react": "^1.46.0",
     "radix-ui": "^1.6.7",
     "react": "^19.3.0",
