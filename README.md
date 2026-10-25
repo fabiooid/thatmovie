@@ -16,11 +16,11 @@ I wanted a small, honest test of grounding: can an agent be made to search first
 2. **Embeddings.** `npm run embed:movies` chunks the summaries and embeds them with `openai/text-embedding-3-small` into a local LibSQL vector store (`data/movies-vector.db`).
 3. **Agent.** A Mastra agent named That Movie, using DeepSeek Flash (`deepseek/deepseek-flash`) at temperature 0.2, with one tool: `search-movies`. Its instructions: always search first, only name films that appear in the results, show the best three when unsure, never invent a title.
 4. **Eval.** A scorer named `always-calls-search` runs on every agent response and passes only if `search-movies` was called. `npm run eval:search` loads a fixed set of well-known film prompts into Mastra Studio (Studio must already be running, default API `http://localhost:4112`). It does not score the agent unless you pass `--run`.
-5. **UI.** A Next.js chat page with short-term memory (last 10 messages).
+5. **UI.** A Vite and React chat page, served by a small Hono server, with short-term memory (last 10 messages).
 
 ## Stack
 
-Next.js 16, React, TypeScript, shadcn/ui, Mastra (agent, memory, RAG, scorers), LibSQL vector store, OpenAI embeddings (`text-embedding-3-small`), DeepSeek Flash for chat.
+Vite, React, TypeScript, shadcn/ui, Hono (API and static files), Mastra (agent, memory, RAG, scorers), LibSQL vector store, OpenAI embeddings (`text-embedding-3-small`), DeepSeek Flash for chat.
 
 ## Run it locally
 
@@ -32,13 +32,15 @@ cp .env.example .env        # add OPENAI_API_KEY (embeddings) and DEEPSEEK_API_K
 # download the CMU Movie Summary Corpus (not included in this repo)
 MOVIE_SUMMARIES_DIR=/path/to/MovieSummaries npm run build:movies
 npm run embed:movies
-npm run dev                 # http://localhost:3000
+npm run dev                 # http://localhost:3000 (or PORT)
 npm run dev:studio          # Mastra Studio, needed before the eval
 npm run eval:search         # load the search cases into Studio
 npm run eval:search -- --run
 ```
 
-`OPENAI_API_KEY` and `DEEPSEEK_API_KEY` belong in `.env`. `MOVIE_SUMMARIES_DIR` is read from the environment when you run `build:movies` (the build script does not load `.env`). You can override the Studio API with `MASTRA_STUDIO_URL` if it is not at `http://localhost:4112/api`.
+`OPENAI_API_KEY` and `DEEPSEEK_API_KEY` belong in `.env`. The Hono server loads `.env` if that file exists. `MOVIE_SUMMARIES_DIR` is read from the environment when you run `build:movies` (the build script does not load `.env`). You can override the Studio API with `MASTRA_STUDIO_URL` if it is not at `http://localhost:4112/api`.
+
+For a production-style run: `npm run build` then `npm run start`.
 
 ## Data
 
